@@ -2,7 +2,6 @@ package handler
 
 import (
 	"fmt"
-	"log"
 	"net/http"
 	"strconv"
 
@@ -125,7 +124,6 @@ func (t *Todo) Delete(c *gin.Context) {
 }
 
 func (t *Todo) List(c *gin.Context) {
-	fmt.Println("=====> LISTING")
 	rawIsCompleted := c.Query("is_completed")
 	var isCompleted *bool
 	if rawIsCompleted != "" {
@@ -140,9 +138,6 @@ func (t *Todo) List(c *gin.Context) {
 	page := parseInt(c.Query("page"), 1)
 	size := parseInt(c.Query("size"), 100)
 
-	log.Println("=========================================")
-	log.Println("=========================================t=", t)
-	log.Println("========>SERVICE= t.service=", t.service)
 	items, total, err := t.service.List(
 		service.WithPage(page),
 		service.WithPageSize(size),
@@ -161,6 +156,28 @@ func (t *Todo) List(c *gin.Context) {
 		},
 		"data": items,
 	})
+}
+
+func (t *Todo) Complete(c *gin.Context) {
+	id := c.Param("id")
+	ctx := c.Request.Context()
+	_, err := t.service.Get(ctx, id)
+	if err == service.ErrTodoItemNotFound {
+		c.JSON(http.StatusNotFound, gin.H{"message": err.Error()})
+		return
+	}
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"message": err.Error()})
+		return
+	}
+
+	item, err := t.service.UpdateCompleteness(ctx, id, true)
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"message": err.Error()})
+		return
+	}
+
+	c.JSON(http.StatusOK, item)
 }
 
 func parseInt(val string, defaultV int64) int64 {

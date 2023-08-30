@@ -144,7 +144,7 @@ func (svc *todoService) UpdateCompleteness(ctx context.Context, id string, compl
 		item.CompletedAt = &now
 	}
 
-	return item, nil
+	return item, svc.db.Save(item).Error
 }
 
 func (svc *todoService) Create(ctx context.Context, title, description string) (*model.TodoItem, error) {
