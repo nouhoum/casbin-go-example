@@ -1,0 +1,10 @@
+services:
+  database:
+    image: postgres:15.3-alpine
+    ports:
+      - "5432:5432"
+    environment:
+      POSTGRES_USER: user
+      POSTGRES_PASSWORD: password
+      POSTGRES_DB: casbinexample
+      POSTGRES_INITDB_ARGS: "--encoding=UTF8"

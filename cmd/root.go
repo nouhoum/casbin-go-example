@@ -1,9 +1,13 @@
 package cmd
 
 import (
+	"fmt"
 	"log"
 
+	"github.com/nouhoum/casbin-go-example/internal/database"
+	"github.com/nouhoum/casbin-go-example/internal/handler"
 	"github.com/nouhoum/casbin-go-example/internal/server"
+	"github.com/nouhoum/casbin-go-example/internal/service"
 	"github.com/samber/do"
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
@@ -35,6 +39,10 @@ func runServer(cmd *cobra.Command, args []string) {
 }
 
 func doInjection(injector *do.Injector) {
+	do.Provide(injector, database.NewConfig)
+	do.Provide(injector, database.New)
+	do.Provide(injector, service.NewTodo)
+	do.Provide(injector, handler.NewTodo)
 	do.Provide(injector, server.New)
 	do.Provide(injector, server.NewConfig)
 	do.Provide(injector, server.NewEngine)
@@ -44,4 +52,10 @@ func init() {
 	viper.AutomaticEnv()
 
 	viper.SetDefault("PORT", 8081)
+
+	viper.AddConfigPath(".")
+	err := viper.ReadInConfig()
+	if err != nil {
+		panic(fmt.Errorf("fatal error config file: %w", err))
+	}
 }

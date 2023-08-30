@@ -1,0 +1,7 @@
+DB_HOST: localhost
+DB_USER: user
+DB_PORT: 5432
+DB_NAME: casbinexample
+DB_PASSWORD: password
+DB_SSL_MODE: disable
+DB_TIME_ZONE: UTC

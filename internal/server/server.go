@@ -2,10 +2,12 @@ package server
 
 import (
 	"fmt"
+	"log"
 	"net/http"
 	"strings"
 
 	"github.com/gin-gonic/gin"
+	"github.com/nouhoum/casbin-go-example/internal/handler"
 	"github.com/rs/cors"
 	"github.com/samber/do"
 	"github.com/spf13/viper"
@@ -31,6 +33,9 @@ type Server struct {
 	Cfg        *Config
 	HTTPServer *http.Server
 	engine     *gin.Engine
+
+	user *handler.User
+	todo *handler.Todo
 }
 
 func New(i *do.Injector) (*Server, error) {
@@ -64,6 +69,7 @@ func New(i *do.Injector) (*Server, error) {
 			Handler: cors.New(opts).Handler(engine),
 		},
 		engine: engine,
+		todo:   do.MustInvoke[*handler.Todo](i),
 	}
 
 	s.addRoutes()
@@ -71,6 +77,7 @@ func New(i *do.Injector) (*Server, error) {
 }
 
 func (s *Server) Run() error {
+	log.Printf("server listening on port %s", s.Cfg.Port)
 	return s.HTTPServer.ListenAndServe()
 }
 
@@ -88,5 +95,20 @@ func NewEngine(i *do.Injector) (*gin.Engine, error) {
 }
 
 func (s *Server) addRoutes() {
-	//TODO: Add routes here.
+	api := s.engine.Group("/api")
+
+	todos := api.Group("/todos")
+	{
+		todos.GET("/:id", s.todo.Get)
+		todos.GET("", s.todo.List)
+		todos.POST("", s.todo.Create)
+		todos.POST("/:id", s.todo.Update)
+		todos.DELETE("/:id", s.todo.Delete)
+	}
+
+	users := api.Group("/users")
+	{
+		users.POST("", s.user.Create)
+		users.POST("/authenticate", s.user.Authenticate)
+	}
 }
