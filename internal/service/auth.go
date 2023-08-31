@@ -98,7 +98,7 @@ func ExtractAuthenticated(c *gin.Context) *api.AuthenticatedUser {
 
 	if claims != nil && claims["id"] != nil && claims["email"] != nil {
 		return &api.AuthenticatedUser{
-			ID:    claims["id"].(uint),
+			ID:    uint(claims["id"].(float64)),
 			Email: claims["email"].(string),
 		}
 	}
