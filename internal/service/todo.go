@@ -5,6 +5,7 @@ import (
 	"errors"
 	"time"
 
+	"github.com/nouhoum/casbin-go-example/api"
 	"github.com/nouhoum/casbin-go-example/internal/model"
 	"github.com/samber/do"
 	"gorm.io/gorm"
@@ -44,12 +45,11 @@ func WithIsCompleted(isCompleted *bool) QueryOption {
 }
 
 type Todo interface {
-	Create(ctx context.Context, title, description string) (*model.TodoItem, error)
+	Create(ctx context.Context, req api.CreateTodoItemRequest) (*model.TodoItem, error)
 	Delete(ctx context.Context, id string) (*model.TodoItem, error)
 	Get(ctx context.Context, id string) (*model.TodoItem, error)
 	List(options ...QueryOption) ([]*model.TodoItem, int64, error)
-	Update(ctx context.Context, id, title, description string) (*model.TodoItem, error)
-	UpdateCompleteness(ctx context.Context, id string, complete bool) (*model.TodoItem, error)
+	Update(ctx context.Context, id string, req api.UpdateTodoItemRequest) (*model.TodoItem, error)
 }
 
 type todoService struct {
@@ -104,7 +104,7 @@ func (svc *todoService) Delete(ctx context.Context, id string) (*model.TodoItem,
 	return nil, svc.db.Delete(item).Error
 }
 
-func (svc *todoService) Update(ctx context.Context, id string, title string, description string) (*model.TodoItem, error) {
+func (svc *todoService) Update(ctx context.Context, id string, update api.UpdateTodoItemRequest) (*model.TodoItem, error) {
 	item, err := svc.Get(ctx, id)
 	if err != nil {
 		if errors.Is(err, gorm.ErrRecordNotFound) {
@@ -113,8 +113,7 @@ func (svc *todoService) Update(ctx context.Context, id string, title string, des
 		return nil, err
 	}
 
-	item.Title = title
-	item.Description = description
+	item = updateItem(update, item)
 
 	err = svc.db.Save(item).Error
 	if err != nil {
@@ -124,31 +123,28 @@ func (svc *todoService) Update(ctx context.Context, id string, title string, des
 	return item, nil
 }
 
-func (svc *todoService) UpdateCompleteness(ctx context.Context, id string, complete bool) (*model.TodoItem, error) {
-	item, err := svc.Get(ctx, id)
-	if err != nil {
-		if errors.Is(err, gorm.ErrRecordNotFound) {
-			return nil, ErrTodoItemNotFound
+func updateItem(update api.UpdateTodoItemRequest, item *model.TodoItem) *model.TodoItem {
+	if update.Title != nil {
+		item.Title = *update.Title
+	}
+
+	if update.Description != nil {
+		item.Description = *update.Description
+	}
+
+	if update.Complete != nil {
+		if *update.Complete {
+			now := time.Now()
+			item.CompletedAt = &now
+		} else {
+			item.CompletedAt = nil
 		}
-		return nil, err
 	}
-
-	if complete == item.IsComplete() {
-		return item, nil
-	}
-
-	if item.IsComplete() {
-		item.CompletedAt = nil
-	} else {
-		now := time.Now()
-		item.CompletedAt = &now
-	}
-
-	return item, svc.db.Save(item).Error
+	return item
 }
 
-func (svc *todoService) Create(ctx context.Context, title, description string) (*model.TodoItem, error) {
-	item := &model.TodoItem{Title: title, Description: description}
+func (svc *todoService) Create(ctx context.Context, req api.CreateTodoItemRequest) (*model.TodoItem, error) {
+	item := &model.TodoItem{Title: req.Title, Description: req.Description}
 	return item, svc.db.Create(item).Error
 }
 

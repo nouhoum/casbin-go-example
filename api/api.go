@@ -18,12 +18,22 @@ type AuthenticatedUser struct {
 	Email string `json:"email,omitempty"`
 }
 
-type CreateOrUpdateTodoItemRequest struct {
-	Title       string `json:"title" validate:"gte=6,lte=32"`
+type CreateTodoItemRequest struct {
+	Title       string `json:"title" validate:"gte=2,lte=32"`
 	Description string `json:"description"`
 }
 
-func (req CreateOrUpdateTodoItemRequest) Validate() error {
+func (req CreateTodoItemRequest) Validate() error {
+	return validator.New().Struct(&req)
+}
+
+type UpdateTodoItemRequest struct {
+	Title       *string `json:"title" validate:"gte=2,lte=32"`
+	Description *string `json:"description"`
+	Complete    *bool   `json:"complete"`
+}
+
+func (req UpdateTodoItemRequest) Validate() error {
 	return validator.New().Struct(&req)
 }
 

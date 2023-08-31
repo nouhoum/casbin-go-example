@@ -114,7 +114,6 @@ func (s *Server) addRoutes() {
 		todos.GET("", s.todo.List)
 		todos.POST("", s.todo.Create)
 		todos.POST("/:id", s.todo.Update)
-		todos.POST("/:id/complete", s.todo.Complete)
 		todos.DELETE("/:id", s.todo.Delete)
 	}
 
