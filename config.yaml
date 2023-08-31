@@ -5,3 +5,6 @@ DB_NAME: casbinexample
 DB_PASSWORD: password
 DB_SSL_MODE: disable
 DB_TIME_ZONE: UTC
+
+JWT_REALM: casbin-go-example
+JWT_KEY: secret_to_changed

@@ -41,11 +41,15 @@ func runServer(cmd *cobra.Command, args []string) {
 func doInjection(injector *do.Injector) {
 	do.Provide(injector, database.NewConfig)
 	do.Provide(injector, database.New)
-	do.Provide(injector, service.NewTodo)
 	do.Provide(injector, handler.NewTodo)
+	do.Provide(injector, handler.NewUser)
 	do.Provide(injector, server.New)
 	do.Provide(injector, server.NewConfig)
 	do.Provide(injector, server.NewEngine)
+	do.Provide(injector, service.NewAuthMiddleware)
+	do.Provide(injector, service.NewJWTConfig)
+	do.Provide(injector, service.NewTodo)
+	do.Provide(injector, service.NewUser)
 }
 
 func init() {

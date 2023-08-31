@@ -6,6 +6,7 @@ import (
 	"net/http"
 	"strings"
 
+	jwt "github.com/appleboy/gin-jwt/v2"
 	"github.com/gin-gonic/gin"
 	"github.com/nouhoum/casbin-go-example/internal/handler"
 	"github.com/rs/cors"
@@ -30,9 +31,10 @@ func NewConfig(i *do.Injector) (*Config, error) {
 }
 
 type Server struct {
-	Cfg        *Config
-	HTTPServer *http.Server
-	engine     *gin.Engine
+	Cfg            *Config
+	HTTPServer     *http.Server
+	engine         *gin.Engine
+	authMiddleware *jwt.GinJWTMiddleware
 
 	user *handler.User
 	todo *handler.Todo
@@ -68,8 +70,11 @@ func New(i *do.Injector) (*Server, error) {
 			Addr:    fmt.Sprintf(":%s", cfg.Port),
 			Handler: cors.New(opts).Handler(engine),
 		},
-		engine: engine,
-		todo:   do.MustInvoke[*handler.Todo](i),
+		engine:         engine,
+		authMiddleware: do.MustInvoke[*jwt.GinJWTMiddleware](i),
+
+		todo: do.MustInvoke[*handler.Todo](i),
+		user: do.MustInvoke[*handler.User](i),
 	}
 
 	s.addRoutes()
@@ -97,7 +102,13 @@ func NewEngine(i *do.Injector) (*gin.Engine, error) {
 func (s *Server) addRoutes() {
 	api := s.engine.Group("/api")
 
+	auth := api.Group("/auth")
+	{
+		auth.POST("", s.authMiddleware.LoginHandler)
+	}
+
 	todos := api.Group("/todos")
+	todos.Use(s.authMiddleware.MiddlewareFunc())
 	{
 		todos.GET("/:id", s.todo.Get)
 		todos.GET("", s.todo.List)
@@ -110,6 +121,5 @@ func (s *Server) addRoutes() {
 	users := api.Group("/users")
 	{
 		users.POST("", s.user.Create)
-		users.POST("/authenticate", s.user.Authenticate)
 	}
 }

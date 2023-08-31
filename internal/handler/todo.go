@@ -45,7 +45,7 @@ func (t *Todo) Create(c *gin.Context) {
 		return
 	}
 
-	c.Writer.Header().Set("Location", fmt.Sprintf("/api/users/%d", item.ID))
+	c.Writer.Header().Set("Location", fmt.Sprintf("/api/todos/%d", item.ID))
 	c.JSON(http.StatusCreated, item)
 }
 
