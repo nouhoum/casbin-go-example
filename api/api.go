@@ -14,13 +14,14 @@ func (auth AuthRequest) Validate() error {
 }
 
 type AuthenticatedUser struct {
-	ID    uint   `json:"id,omitempty"`
+	ID    int    `json:"id,omitempty"`
 	Email string `json:"email,omitempty"`
 }
 
 type CreateTodoItemRequest struct {
 	Title       string `json:"title" validate:"gte=2,lte=32"`
 	Description string `json:"description"`
+	OwnerID     int    `json:"-"`
 }
 
 func (req CreateTodoItemRequest) Validate() error {
@@ -46,6 +47,7 @@ type CreateUserRequest struct {
 	Password  string `json:"password" validate:"gte=6,lte=32"`
 	Firstname string `json:"firstname"`
 	Lastname  string `json:"lastname"`
+	RoleID    *int   `json:"-"`
 }
 
 func (req CreateUserRequest) Validate() error {

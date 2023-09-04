@@ -38,7 +38,7 @@ func (u *User) Create(c *gin.Context) {
 	}
 
 	ctx := c.Request.Context()
-	user, err := u.service.Create(ctx, req.Email, req.Password, req.Firstname, req.Lastname)
+	user, err := u.service.Create(ctx, *req)
 
 	if err != nil {
 		if errors.Is(err, service.ErrEmailTaken) {

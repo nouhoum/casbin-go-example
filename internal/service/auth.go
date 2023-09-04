@@ -10,6 +10,10 @@ import (
 	"github.com/spf13/viper"
 )
 
+const (
+	UserIDKey = "X-CURRENT-USER-ID"
+)
+
 type JWTConfig struct {
 	realm string
 	key   string
@@ -32,7 +36,7 @@ func NewAuthMiddleware(i *do.Injector) (*jwt.GinJWTMiddleware, error) {
 		Timeout:          time.Hour,
 		MaxRefresh:       time.Hour * 24,
 		SigningAlgorithm: "HS256",
-		IdentityKey:      "identity",
+		IdentityKey:      UserIDKey,
 		IdentityHandler:  idHandler,
 		Authenticator:    authenticator(svc),
 		PayloadFunc: func(data interface{}) jwt.MapClaims {
@@ -89,16 +93,16 @@ func authenticator(svc User) func(*gin.Context) (interface{}, error) {
 }
 
 func idHandler(c *gin.Context) interface{} {
-	return ExtractAuthenticated(c)
+	return Authenticated(c)
 }
 
-// ExtractAuthenticated extracts authenticated user from the request
-func ExtractAuthenticated(c *gin.Context) *api.AuthenticatedUser {
+// Authenticated extracts authenticated user from the request
+func Authenticated(c *gin.Context) *api.AuthenticatedUser {
 	claims := jwt.ExtractClaims(c)
 
 	if claims != nil && claims["id"] != nil && claims["email"] != nil {
 		return &api.AuthenticatedUser{
-			ID:    uint(claims["id"].(float64)),
+			ID:    int(claims["id"].(float64)),
 			Email: claims["email"].(string),
 		}
 	}

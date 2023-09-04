@@ -13,6 +13,7 @@ import (
 var models = []interface{}{
 	&model.TodoItem{},
 	&model.User{},
+	&model.CasbinRule{},
 }
 
 func New(i *do.Injector) (*gorm.DB, error) {

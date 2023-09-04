@@ -37,9 +37,10 @@ func (t *Todo) Create(c *gin.Context) {
 		return
 	}
 
+	req.OwnerID = CurrentUserID(c)
+
 	ctx := c.Request.Context()
 	item, err := t.service.Create(ctx, *req)
-
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"message": err.Error()})
 		return

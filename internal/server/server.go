@@ -7,6 +7,7 @@ import (
 	"strings"
 
 	jwt "github.com/appleboy/gin-jwt/v2"
+	"github.com/casbin/casbin/v2"
 	"github.com/gin-gonic/gin"
 	"github.com/nouhoum/casbin-go-example/internal/handler"
 	"github.com/rs/cors"
@@ -36,8 +37,9 @@ type Server struct {
 	engine         *gin.Engine
 	authMiddleware *jwt.GinJWTMiddleware
 
-	user *handler.User
-	todo *handler.Todo
+	user     *handler.User
+	todo     *handler.Todo
+	enforcer *casbin.Enforcer
 }
 
 func New(i *do.Injector) (*Server, error) {
@@ -72,6 +74,7 @@ func New(i *do.Injector) (*Server, error) {
 		},
 		engine:         engine,
 		authMiddleware: do.MustInvoke[*jwt.GinJWTMiddleware](i),
+		enforcer:       do.MustInvoke[*casbin.Enforcer](i),
 
 		todo: do.MustInvoke[*handler.Todo](i),
 		user: do.MustInvoke[*handler.User](i),
@@ -110,11 +113,11 @@ func (s *Server) addRoutes() {
 	todos := api.Group("/todos")
 	todos.Use(s.authMiddleware.MiddlewareFunc())
 	{
-		todos.GET("/:id", s.todo.Get)
-		todos.GET("", s.todo.List)
+		todos.GET("/:id", s.AccessControl("todos", "read", "id"), s.todo.Get)
+		todos.GET("", s.AccessControl("todos", "read", ""), s.todo.List)
 		todos.POST("", s.todo.Create)
-		todos.POST("/:id", s.todo.Update)
-		todos.DELETE("/:id", s.todo.Delete)
+		todos.POST("/:id", s.AccessControl("todos", "write", "id"), s.todo.Update)
+		todos.DELETE("/:id", s.AccessControl("todos", "delete", "id"), s.todo.Delete)
 	}
 
 	users := api.Group("/users")

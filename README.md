@@ -13,3 +13,9 @@ This uses has the following dependencies:
 ```sh
 go run main.go
 ```
+
+```
+A user can        read/write/delete my own items
+An admin can      read/write all items
+A super admin can read/write/delete all items
+```

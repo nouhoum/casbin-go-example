@@ -8,3 +8,6 @@ DB_TIME_ZONE: UTC
 
 JWT_REALM: casbin-go-example
 JWT_KEY: secret_to_changed
+
+CASBIN_CONFIG: casbin.conf
+CASBIN_RULES_TABLE: casbin_rules

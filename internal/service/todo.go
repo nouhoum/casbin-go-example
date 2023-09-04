@@ -53,12 +53,14 @@ type Todo interface {
 }
 
 type todoService struct {
-	db *gorm.DB
+	db     *gorm.DB
+	policy Policy
 }
 
 func NewTodo(i *do.Injector) (Todo, error) {
 	return &todoService{
-		db: do.MustInvoke[*gorm.DB](i),
+		db:     do.MustInvoke[*gorm.DB](i),
+		policy: do.MustInvoke[Policy](i),
 	}, nil
 }
 
@@ -100,8 +102,17 @@ func (svc *todoService) Delete(ctx context.Context, id string) (*model.TodoItem,
 		}
 		return nil, err
 	}
+	err = svc.db.Delete(item).Error
+	if err != nil {
+		return nil, err
+	}
 
-	return nil, svc.db.Delete(item).Error
+	err = svc.policy.OnTodoItemDeletion(ctx, *item)
+	if err != nil {
+		return nil, err
+	}
+
+	return item, nil
 }
 
 func (svc *todoService) Update(ctx context.Context, id string, update api.UpdateTodoItemRequest) (*model.TodoItem, error) {
@@ -123,6 +134,20 @@ func (svc *todoService) Update(ctx context.Context, id string, update api.Update
 	return item, nil
 }
 
+func (svc *todoService) Create(ctx context.Context, req api.CreateTodoItemRequest) (*model.TodoItem, error) {
+	item := &model.TodoItem{Title: req.Title, Description: req.Description, OwnerID: req.OwnerID}
+	err := svc.db.Create(item).Error
+	if err != nil {
+		return nil, err
+	}
+	err = svc.policy.OnTodoItemCreation(ctx, *item)
+	if err != nil {
+		return nil, err
+	}
+
+	return item, err
+}
+
 func updateItem(update api.UpdateTodoItemRequest, item *model.TodoItem) *model.TodoItem {
 	if update.Title != nil {
 		item.Title = *update.Title
@@ -141,11 +166,6 @@ func updateItem(update api.UpdateTodoItemRequest, item *model.TodoItem) *model.T
 		}
 	}
 	return item
-}
-
-func (svc *todoService) Create(ctx context.Context, req api.CreateTodoItemRequest) (*model.TodoItem, error) {
-	item := &model.TodoItem{Title: req.Title, Description: req.Description}
-	return item, svc.db.Create(item).Error
 }
 
 func (svc *todoService) applyOptions(options []QueryOption) *gorm.DB {
