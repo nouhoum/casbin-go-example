@@ -18,8 +18,7 @@ type User interface {
 	Authenticate(ctx context.Context, email, password string) (*model.User, error)
 	Create(ctx context.Context, req api.CreateUserRequest) (*model.User, error)
 	IsEmailTaken(ctx context.Context, email string) (bool, error)
-	// InitUsers for test purposes only
-	InitUsers() error
+	InitUsers() error // InitUsers for test purposes only
 }
 
 type userService struct {

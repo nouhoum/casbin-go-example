@@ -3,7 +3,6 @@ package service
 import (
 	"context"
 	"fmt"
-	"log"
 
 	"github.com/casbin/casbin/v2"
 	"github.com/nouhoum/casbin-go-example/internal/model"
@@ -47,7 +46,6 @@ func (p *policy) OnTodoItemCreation(ctx context.Context, item model.TodoItem) er
 		rules = append(rules, []string{subj, obj, act})
 	}
 
-	log.Println("=====> RULES TO ADD=", rules)
 	_, err := p.enforcer.AddPolicies(rules)
 	if err != nil {
 		return err
