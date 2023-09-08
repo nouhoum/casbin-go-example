@@ -54,6 +54,7 @@ func doInjection(injector *do.Injector) {
 	do.Provide(injector, server.NewConfig)
 	do.Provide(injector, server.NewEngine)
 	do.Provide(injector, service.NewAuthMiddleware)
+	do.Provide(injector, service.NewAuthorizer)
 	do.Provide(injector, service.NewCasbinConfig)
 	do.Provide(injector, service.NewCasbinEnforcer)
 	do.Provide(injector, service.NewJWTConfig)

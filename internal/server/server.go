@@ -7,9 +7,9 @@ import (
 	"strings"
 
 	jwt "github.com/appleboy/gin-jwt/v2"
-	"github.com/casbin/casbin/v2"
 	"github.com/gin-gonic/gin"
 	"github.com/nouhoum/casbin-go-example/internal/handler"
+	"github.com/nouhoum/casbin-go-example/internal/service"
 	"github.com/rs/cors"
 	"github.com/samber/do"
 	"github.com/spf13/viper"
@@ -36,10 +36,10 @@ type Server struct {
 	HTTPServer     *http.Server
 	engine         *gin.Engine
 	authMiddleware *jwt.GinJWTMiddleware
+	authorizer     service.Authorizer
 
-	user     *handler.User
-	todo     *handler.Todo
-	enforcer *casbin.Enforcer
+	user *handler.User
+	todo *handler.Todo
 }
 
 func New(i *do.Injector) (*Server, error) {
@@ -74,7 +74,7 @@ func New(i *do.Injector) (*Server, error) {
 		},
 		engine:         engine,
 		authMiddleware: do.MustInvoke[*jwt.GinJWTMiddleware](i),
-		enforcer:       do.MustInvoke[*casbin.Enforcer](i),
+		authorizer:     do.MustInvoke[service.Authorizer](i),
 
 		todo: do.MustInvoke[*handler.Todo](i),
 		user: do.MustInvoke[*handler.User](i),

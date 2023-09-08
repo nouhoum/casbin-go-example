@@ -19,7 +19,7 @@ func (s *Server) AccessControl(obj, act, objIDName string) gin.HandlerFunc {
 			resource = fmt.Sprintf("%s.%s", resource, objID)
 		}
 
-		ok, err := s.enforcer.Enforce(subj, resource, act)
+		ok, err := s.authorizer.IsAuthorized(subj, resource, act)
 		if err != nil {
 			c.AbortWithStatusJSON(http.StatusInternalServerError, gin.H{"message": err.Error()})
 			return
