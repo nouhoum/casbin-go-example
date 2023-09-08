@@ -11,6 +11,7 @@ This uses has the following dependencies:
 ## Run in dev mode
 
 ```sh
+docker compose up -d
 go run main.go
 ```
 
