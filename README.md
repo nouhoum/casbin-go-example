@@ -1,5 +1,7 @@
 # casbin-go-example
 
+## Post blog explaining the project: https://medium.com/@nouhoum/autorisation-contr%C3%B4le-dacc%C3%A8s-avec-casbin-et-golang-6913c467bcdd
+
 ## Dependencies
 
 This uses has the following dependencies:
